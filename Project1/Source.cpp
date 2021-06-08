@@ -1,36 +1,32 @@
 #include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <math.h>
-#include <stack> 
-#include <queue>
-#include <vector>
-#include <ctime>
-#include "glut.h"
-#include "glaux.h"
-#include <chrono>
-#include "move.h"
-#include "image.h"
+#include <iostream>                                 //для работы с файлами
+#include <fstream>                                  //тоже
+#include <math.h>                                   //для нестандартных матиматических операций
+#include <vector>                                   //для возможности использовать векторы, т.к они удобнее массивов
+#include <ctime>                                    //для работы со временем
+#include "glut.h"                                   //графика
+#include "glaux.h"                                  //тоже
+#include <chrono>                                   //для работы со временем
+#include "move.h"                                   //пользовательская библиотека для управления визуализацией с клавиатуры
+#include "image.h"                                  //пользовательская библиотека для отрисовки графики
 
-
+//кусок, отвечающий за то, чтоб пользовательские библиотеки не подгружались рекурсивно
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glut32.lib")
 #pragma comment(lib, "glaux.lib")
-
-using namespace std;
-
-
-//int newDRP[100][100];
-//char Lboard[100][100], Sboard[100][100];
-int bx, by, cx, cy, px, py;
-bool Lblock[10000], Sblock[10000];
-int Lpath[10000], Spath[10000];
-const int MAX_value=10000000;
+ 
+using namespace std;                                // рабочее пространство имен
 
 
-int count_city, count_barrier, count_point;
+int bx, by, cx, cy, px, py;                         //координаты препятствий, городов, точек, соответственно
+bool Lblock[10000], Sblock[10000];                  // ДРП (дискретное рабочее поле) логическое
+int Lpath[10000], Spath[10000];                     //тоже, только цифровое
+const int MAX_value=10000000;                       //переменная, для сравнения
 
-class Timer {
+
+int count_city, count_barrier, count_point;         //счетчики количества городов, препятствий и точек для рандомайзера
+
+class Timer {                                       //класс для замера времени, его я описывать не буду, т.к это уже сложновато, врятли ты поймешь)  (без обид)
 private: 
     using clock_t = chrono::high_resolution_clock;
     using second_t = chrono::duration<double, std::ratio<1> >;
@@ -43,6 +39,8 @@ public:
     }
 };
 
+//векторы это аналоги массивов, обладающие бОльшим удобством, т.к могут менять размер и имеют много крутых встроенных функций
+//веторы для хранения координат точек, городов и препятствий, соответственно
 vector<int> point_x_pos;
 vector<int> point_y_pos;
 
@@ -52,30 +50,42 @@ vector<int> city_y_pos;
 vector<int> barrier_x_pos;
 vector<int> barrier_y_pos;
 
-int p_c_pos_x, p_c_pos_y;
-int p_b_pos_x, p_b_pos_y;
-int p_opt_x, p_opt_y;
+int p_opt_x, p_opt_y;                                                                   //координаты оптимальной точки
 
 void print_termenal_and_barrier();
 void print_DRP();
-void Print_newDRP(char Sboard[100][100]);
+void Print_newDRP(char Sboard[1000][1000]);
 void RenderScene();
 
-int dist_to_city(int p_x, int p_y, vector<int> c_x, vector<int> c_y) {                  //находим для точки расстояние до ближайшего к НЕЙ города
+//функция нахождения расстония от точки до ближайшего к ней города
+int dist_to_city(int p_x, int p_y, vector<int> c_x, vector<int> c_y) {                  //входные данные это координаты рассматриваемой точки и векторы с координатами всех городов             
 
-    int dist_all = MAX_value;
-    int opt_x_pos, opt_y_pos;
-    for (int i = 0; i < c_x.size(); i++) {
-        if (abs(p_x - c_x[i]) + abs(p_y - c_y[i]) < dist_all) {
-            dist_all = abs(p_x - c_x[i]) + abs(p_y - c_y[i]);
+    int dist_all = MAX_value;                                                           //объявляем, что минимальное расстояние равно огромному значению
+    for (int i = 0; i < c_x.size(); i++) {                                              //циклом перебираем координаты всех городов
+        /* на каждой итерации (вот тебе и итерационный алгоритм)
+        находим манххэттеновское расстояние (то есть рассояние по 
+        горизонтале и вертикале) между точкой и городом. Сравниваем
+        это расстояние с минимальным (а оно у нас на первой итерации = 10000000,
+        то есть первое найденное растояние будет точно меньше)
+        Если оно меньше минимального, то объявляем, что теперь это минимальное
+        расстояние. таким образом при переборе всех координат городов
+        мы найдем ближайший город и расстояние до него. Функция возвращает
+        значение равное расстоянию до ближайшего города
+        */
+        if (abs(p_x - c_x[i]) + abs(p_y - c_y[i]) < dist_all) {                         //перебираем коор-ты всех городов и сравниваем расстоние до них с минимальным расстоянием на данной итерации              
+            dist_all = abs(p_x - c_x[i]) + abs(p_y - c_y[i]);                           //объявляем найденное расстояние минимальным, если оно меньше минимального.найденного ранее
         }
     }
-    return dist_all;
+    return dist_all;                                                                    //возвращаемое значение
 }
 
-int dist_to_barier(int p_x, int p_y, vector<int> b_x, vector<int> b_y) {                //находим для точки расстояние для ближайшего препятствия
+//фунция нахождения расстояния до ближайшего препятствия
+int dist_to_barier(int p_x, int p_y, vector<int> b_x, vector<int> b_y) {                //входные данные это координаты рассматриваемой точки и векторы с координатами всех препятствий
     int dist_all = MAX_value;
-    int opt_x_pos, opt_y_pos;
+    /*ллогика работы точно такая же, что и в предыдущей функции, только
+    теперь мы рассматриваем координаты препятствий вместо коор-т городов.
+    Описывать не буду, все точно также. Выходными данными является расстоние 
+    от точки до ближайшего препятствия*/
     for (int i = 0; i < b_x.size(); i++) {
         if (abs(p_x - b_x[i]) + abs(p_y - b_y[i]) < dist_all) {
             dist_all = abs(p_x - b_x[i]) + abs(p_y - b_y[i]);
@@ -84,9 +94,9 @@ int dist_to_barier(int p_x, int p_y, vector<int> b_x, vector<int> b_y) {        
     return dist_all;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char* argv[])                                                         //Это основная (головная) функция программы, она является точкой входа в программу
 {
-    setlocale(LC_ALL, "Russian");
+    setlocale(LC_ALL, "Russian");                                                        //говорим о том, что в проге используется русский язык. Это нужно для корректного отображения русского текста в консоле (и не только)
    /* cout << "Введите размер ДРП: ";
     cin >> n;
     cout <<endl<< "Ведите количество препятствий: ";
@@ -110,47 +120,49 @@ int main(int argc, char* argv[])
 
     }*/
 
-    ifstream in("input.txt");    
-    if (!in.is_open()) // если файл не открыт
-        cout << "Файл не может быть открыт!\n"; 
-    else {
+    ifstream in("input.txt");                                                               //объявляем объект (переменную) являющийся объектом потокового ввода из файла
+    //некая проверка на возможность откыть файл
+    //это не обязательно, но это является правилом хорошего тона
+    if (!in.is_open()) {                                                                    //проверяем, можно ли открыть это файл (Может быть так, что файдла не существует)  
+        cout << "Файл не может быть открыт!\n";                                             //если файл открыть невозможно, то сообщаем об этом пользователю и закрываем программу
+        return ERROR_FILE_NOT_FOUND;                                                        //директива ошибки открытия файла (файл не найден)
+    }
+    else {                                                                                  //если файл найден, то читаем данные из него
 
-        in >> n;
+        in >> n;                                                                            //читаем размер ДРП (оно будет только квадратным)
+        /*Создаем наше ДРП путем заполнения 0 (0 - пустое место)
+        Т.к ДРп представляет собой двой массив (матрицу), то 
+        заполнение происходит в двойном цикле - по строчно*/
         for (int i = 0; i < n; i++)
         {
             for (int j = 0; j < n; j++)
             {
-                Lboard[i][j] = '0';
+                Lboard[i][j] = '0';                                                         //изначально все ячейки ДРП делаем пустыми
                 Sboard[i][j] = '0';
             }
         }
-        memset(Lblock, false, (n * n) + 1);                                                                 //заполняем блоки памяти Lblock и Sblock 0
-        memset(Sblock, false, (n * n) + 1);
 
-        in >> count_barrier;
-        for (int i = 0; i < count_barrier; i++)
-        {
-            in >> bx >> by;
-            barrier_x_pos.push_back(bx);
-            barrier_y_pos.push_back(by);
-            Lboard[bx][by] = '#';
+        in >> count_barrier;                                                                //читаем кол-во препятствий
+        for (int i = 0; i < count_barrier; i++) {
+            in >> bx >> by;                                                                 //читаем коор-ту каждого препятствия по х и у
+            barrier_x_pos.push_back(bx);                                                    //добавляем коор-ту по х в вектор коор-т препятствий по х
+            barrier_y_pos.push_back(by);                                                    //аналогично только по у
+            Lboard[bx][by] = '#';                                                           //расставляем препятствия на ДРП, для этого обозначем их специальным символом #
             Sboard[bx][by] = '#';
-            Lblock[bx * n + by] = true;
-            Sblock[bx * n + by] = true;
         }
 
-        in >> count_city;
+        in >> count_city;                                                                   //читаем кол-во городов
         for (int i = 0; i < count_city; i++) {
-            in >> cx >> cy;
+            in >> cx >> cy;                                                                 //здесь все аналогично с препятствиями
             city_x_pos.push_back(cx);
             city_y_pos.push_back(cy);
             Lboard[cx][cy] = 'C';
             Sboard[cx][cy] = 'C';
         }
 
-        in >> count_point;
+        in >> count_point;                                                                   //читаем кол-во точек
         for (int i = 0; i < count_point; i++) {
-            in >> px >> py;
+            in >> px >> py;                                                                  //тоже аналогично
             point_x_pos.push_back(px);
             point_y_pos.push_back(py);
             Lboard[px][py] = 'P';
@@ -159,64 +171,78 @@ int main(int argc, char* argv[])
     }
 
 
-    print_termenal_and_barrier();
-    cout << endl << endl;
+    print_termenal_and_barrier();                                                           //выводим наше ДРП после расстановки всех препятствий, городов и точек
+    cout << endl << endl;                                               
 
-    int min_dist_p_to_c = MAX_value;
-    //for (int i = 0; i < point_x_pos.size(); i++) {                                                              //находим точку, которая находится ближе всего к одному из всех городов
-    //    if (dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos) < min_dist_p_to_c) {           //слишком сложная реализация, упростить!
-    //        min_dist_p_to_c = dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos);
-    //        p_c_pos_x = point_x_pos[i];
-    //        p_c_pos_y = point_y_pos[i];
-    //    }
-    //}
+
+
+    int min_dist_p_to_c = MAX_value;                                                        //объявляем что минимальное расстояние = огромному числу
+    int max_dist_p_to_b = 0;                                                                //максимальное расстояние ранво 0
+
+    Timer t;                                                                                //объект класса времени (нужно для оценки времени). Точка начала отсчета времени работы алгоритма
+
+    //тут вот бовольно сложная для визуального восприятия конструкция... если надо, могу упростить
     
-    //cout << endl<<p_c_pos_x << " " << p_c_pos_y;
-
-    int max_dist_p_to_b = 0;
-    //for (int i = 0; i < point_x_pos.size(); i++) {                                                              //находим точкую, для которой расстояние до ближайшего препятствия максимально
-    //    if (dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos) > max_dist_p_to_b) {
-    //        max_dist_p_to_b = dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos);
-    //        p_b_pos_x = point_x_pos[i];
-    //        p_b_pos_y = point_y_pos[i];
-    //    }
-    //}
-
-    for (int i = 0; i < point_x_pos.size(); i++) {          //находим точку, расстояние от которой до ближайшего города минимально, а расстояние до препятствия максимально
-        if ((dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos) <= min_dist_p_to_c) &&
-            (dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos) >= max_dist_p_to_b))
+    /*в цикле перебираем все точки
+    для каждой точки с помощью двух функций описанных выше
+    находим расстояние для ближайшего города
+    и ближайшего препятствия. находим точку, удовлетворяющуую
+    2 условиям:
+    1) расстояние от точки до ближайшего препятствия максимально
+    2) расстояние до ближайшего города минимально
+    Только при соблюдении ОБОИХ условий мы рассматриваем точку
+    На каждой итерации мы будем находить все более оптимальные точки.
+    Таким образом при переборе всех точек мы найдем оптимальную
+    */
+    for (int i = 0; i < point_x_pos.size(); i++) {                                                                  //пробегаемся по всем точкам. Условия рассмтариваются ОДНОВРЕМЕННО с помощью логического AND ( логического и)   
+        if ((dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos) <= min_dist_p_to_c) &&            //условие того, что расстояние до города минимально
+            (dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos) >= max_dist_p_to_b))      //условие того, что расстояние до препятствия максимально
+            //в условиях приведенных выше используется условия меньше/больше ИЛИ РАВНО
+            //это сделаю потому, что одна коор-та мождет совпадать, а вторая будет подходить лучше
         {
-            min_dist_p_to_c = dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos);
-            max_dist_p_to_b = dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos);
-            p_opt_x = point_x_pos[i];
+            //сюда мы попадаем только если точка подходит по вышеописанным условиям
+            //если точка удовлетворяет условиям, то определяем новое минимальное расстояние до города
+            //и максимально до препятствия. таким образом мы найдем оптимальную точку
+            //таким образом мы на каждой итерации сужаем условия подходящих точек (по сути это и есть твой эвристический алгоритм)
+            min_dist_p_to_c = dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos);                 //минимальное расстояние до города становится равно новому минимальному расстоянию
+            max_dist_p_to_b = dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos);         //максимальное расстояние до ближайшего препятствия равно новому макс расстоянию
+            p_opt_x = point_x_pos[i];                                                                               //если точка подошла по условиям, то запоминаем ее коор-ты
             p_opt_y = point_y_pos[i];
         }
 
     }
-    cout << min_dist_p_to_c;
-    cout <<endl<<max_dist_p_to_b;
 
-    cout <<endl<< "Координаты оптимальной точки: " << p_opt_x << " " << p_opt_y;
+    double time_algotim = t.elapsed();                                                                              //точка завершающая отсчет времени
 
-    Lboard[p_opt_x][p_opt_y] = '*';
+    cout << endl << "Координаты оптимальной точки: " << p_opt_x << " " << p_opt_y;                                  //выводим в консоль коор-ты найденной оптимальной точки
+
+    cout << min_dist_p_to_c;                                                                                        //выводим в консоль расстояние от найденой оптимальной точки до ближайшего  города
+    cout <<endl<<max_dist_p_to_b;                                                                                   //выводим в консоль расстояние от найденой оптимальной точки до ближайшего  препятствия
+
+    
+
+    Lboard[p_opt_x][p_opt_y] = '*';                                                                                 //помечаем на ДРП найденную оптимальную точку специальным символом
     Sboard[p_opt_x][p_opt_y] = '*';
 
+    cout << endl << "Время выполнения алгоритма : " << time_algotim * 1000000000 << " ns" << endl;                  //выводит время, затраченное на выполнение алгоритма умножая на некий коэффициент 
+                                                                                                                    //(потому что я не помню, в каких единицах оно измеряется =))0) ). Выводится в наносекундах
+                                                                                                                    //наносекунда это одна миллионная секунды
 
-    Print_newDRP(Sboard);
+    Print_newDRP(Sboard);                                                                                           //функция преобразующая ДРП символьного вида в ДРП цифрового вида (это нужно для дальнейшей визуализации)                 
 
 
-
+    //кусок отвечающей за корректную работу графики
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowPosition(100, 100);
-    glutInitWindowSize(800, 800);
-    glutCreateWindow("Даня");
+    glutInitWindowSize(1000, 1000);                                                                                 //размер выводимого окна
+    glutCreateWindow("Даня");                                                                                       //название окна
     glEnable(GL_DEPTH_TEST);
     glClearColor(0, 0, 0, 1);
-    glutReshapeFunc(reshape);
-    glutDisplayFunc(RenderScene);
-    glutKeyboardFunc(Read_kb);
-    glutSpecialFunc(ReadSpec);
+    glutReshapeFunc(reshape);                                                                                       //рендеринг
+    glutDisplayFunc(RenderScene);                                                                                   //основаня (головная) функция отрисовки графики (она писана в пользовательской библиотеке)
+    glutKeyboardFunc(Read_kb);                                                                                      //функция отклика графики на клавиатуру
+    glutSpecialFunc(ReadSpec);                                                                                      //тоже клава
     glutMainLoop();
-    return 0;
-}
+    return 0;                                                                                                       //значение возвращаемое главной функцикей програмы (main). Если в программе будут ошибки, то значение будет не 0.
+}                                                                                                                   //конец главной функции

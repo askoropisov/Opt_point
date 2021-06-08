@@ -3,19 +3,19 @@
 #include <iomanip>
 #include "windows.h"
 #include <conio.h>
-#include "glut.h"
-#include "glaux.h"
+#include "glut.h"                                                       //дл€ графики OpenGL
+#include "glaux.h"                                                      //тоже дл€ графики (по-моему, это дл€ 3-д графики)
 
-
+//кусок, отвечающий за то, чтоб пользовательские библиотеки не подгружались рекурсивно
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glut32.lib")
 #pragma comment(lib, "glaux.lib")
 
-using namespace std;
+using namespace std;                                                    // рабочее пространство имен
 
-int n;
-int newDRP[100][100];
-char Lboard[100][100], Sboard[100][100];
+int n;                                                                  //объ€вление размера ƒ–ѕ
+int newDRP[1000][1000];                                               //объ€вление
+char Lboard[1000][1000], Sboard[1000][1000];
 
 
 void RenderScene() {
@@ -40,7 +40,6 @@ void RenderScene() {
         {
             switch (newDRP[i][j])
             {
-
             case 0: glBegin(GL_QUADS);							
                 glColor3f(1, 1, 1);
                 glVertex3f(2 * j + 1 - 16.5, -2 * i + 16.5, 2);
@@ -100,7 +99,6 @@ void RenderScene() {
                 glVertex3f(2 * j - 16.5, -2 * i - 1 + 16.5, 2);
                 glVertex3f(2 * j + 1 - 16.5, -2 * i - 1 + 16.5, 2);
                 glEnd();
-
 
                 glBegin(GL_TRIANGLES);
                 glColor3f(0, 0, 1);
@@ -167,7 +165,7 @@ void print_DRP()
     }
 }
 
-void Print_newDRP(char Sboard[100][100])									
+void Print_newDRP(char Sboard[1000][1000])									
 {
     for (int i = 0; i < n; i++)
     {
