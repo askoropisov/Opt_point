@@ -27,8 +27,7 @@ bool Lblock[10000], Sblock[10000];
 int Lpath[10000], Spath[10000];
 const int MAX_value=10000000;
 
-int startX_mass[100], startY_mass[100], target_X_mass[100], target_Y_mass[100];
-int super_id;
+
 int count_city, count_barrier, count_point;
 
 class Timer {
@@ -88,6 +87,28 @@ int dist_to_barier(int p_x, int p_y, vector<int> b_x, vector<int> b_y) {        
 int main(int argc, char* argv[])
 {
     setlocale(LC_ALL, "Russian");
+   /* cout << "Введите размер ДРП: ";
+    cin >> n;
+    cout <<endl<< "Ведите количество препятствий: ";
+    cin >> count_barrier;
+    cout << endl<<"Введите количество городов: ";
+    cin >> count_city;
+    cout << endl << "Введите количество точек: ";
+    cin >> count_point;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            Lboard[i][j] = '0';
+            Sboard[i][j] = '0';
+        }
+    }
+
+    for (int i = 0; i < count_barrier; i++) {
+         
+
+    }*/
 
     ifstream in("input.txt");    
     if (!in.is_open()) // если файл не открыт
@@ -179,11 +200,6 @@ int main(int argc, char* argv[])
 
     Lboard[p_opt_x][p_opt_y] = '*';
     Sboard[p_opt_x][p_opt_y] = '*';
-
-    //cout << endl << p_b_pos_x << " " << p_b_pos_y;
-
-   /* print_DRP();
-    cout << endl << endl;*/
 
 
     Print_newDRP(Sboard);
