@@ -130,10 +130,10 @@ void RenderScene() {
                 glVertex3f(2 * j + 0.5 - 16.5, -2 * i + 16, 3);
                 glEnd();
                 break;
-            case 777: glColor3f(1, 1, 0.5);						
+            case 777: glColor3f(1, 0, 1);						
                 glPushMatrix();
                 glTranslatef(2 * j - 16, -2 * i + 16, 3);
-                glutSolidCube(1);
+                glutSolidSphere(1, 100, 100);
                 glPopMatrix();
                 break;
             }

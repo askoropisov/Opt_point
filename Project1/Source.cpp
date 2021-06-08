@@ -25,6 +25,7 @@ using namespace std;
 int bx, by, cx, cy, px, py;
 bool Lblock[10000], Sblock[10000];
 int Lpath[10000], Spath[10000];
+const int MAX_value=10000000;
 
 int startX_mass[100], startY_mass[100], target_X_mass[100], target_Y_mass[100];
 int super_id;
@@ -52,6 +53,10 @@ vector<int> city_y_pos;
 vector<int> barrier_x_pos;
 vector<int> barrier_y_pos;
 
+int p_c_pos_x, p_c_pos_y;
+int p_b_pos_x, p_b_pos_y;
+int p_opt_x, p_opt_y;
+
 void print_termenal_and_barrier();
 void print_DRP();
 void Print_newDRP(char Sboard[100][100]);
@@ -59,11 +64,22 @@ void RenderScene();
 
 int dist_to_city(int p_x, int p_y, vector<int> c_x, vector<int> c_y) {                  //находим дл€ точки рассто€ние до ближайшего к Ќ≈… города
 
-    int dist_all = 100000;
+    int dist_all = MAX_value;
     int opt_x_pos, opt_y_pos;
     for (int i = 0; i < c_x.size(); i++) {
         if (abs(p_x - c_x[i]) + abs(p_y - c_y[i]) < dist_all) {
             dist_all = abs(p_x - c_x[i]) + abs(p_y - c_y[i]);
+        }
+    }
+    return dist_all;
+}
+
+int dist_to_barier(int p_x, int p_y, vector<int> b_x, vector<int> b_y) {                //находим дл€ точки рассто€ние дл€ ближайшего преп€тстви€
+    int dist_all = MAX_value;
+    int opt_x_pos, opt_y_pos;
+    for (int i = 0; i < b_x.size(); i++) {
+        if (abs(p_x - b_x[i]) + abs(p_y - b_y[i]) < dist_all) {
+            dist_all = abs(p_x - b_x[i]) + abs(p_y - b_y[i]);
         }
     }
     return dist_all;
@@ -94,6 +110,8 @@ int main(int argc, char* argv[])
         for (int i = 0; i < count_barrier; i++)
         {
             in >> bx >> by;
+            barrier_x_pos.push_back(bx);
+            barrier_y_pos.push_back(by);
             Lboard[bx][by] = '#';
             Sboard[bx][by] = '#';
             Lblock[bx * n + by] = true;
@@ -112,6 +130,8 @@ int main(int argc, char* argv[])
         in >> count_point;
         for (int i = 0; i < count_point; i++) {
             in >> px >> py;
+            point_x_pos.push_back(px);
+            point_y_pos.push_back(py);
             Lboard[px][py] = 'P';
             Sboard[px][py] = 'P';
         }
@@ -121,7 +141,46 @@ int main(int argc, char* argv[])
     print_termenal_and_barrier();
     cout << endl << endl;
 
-   cout<< dist_to_city(6, 6, city_x_pos, city_y_pos);
+    int min_dist_p_to_c = MAX_value;
+    //for (int i = 0; i < point_x_pos.size(); i++) {                                                              //находим точку, котора€ находитс€ ближе всего к одному из всех городов
+    //    if (dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos) < min_dist_p_to_c) {           //слишком сложна€ реализаци€, упростить!
+    //        min_dist_p_to_c = dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos);
+    //        p_c_pos_x = point_x_pos[i];
+    //        p_c_pos_y = point_y_pos[i];
+    //    }
+    //}
+    
+    //cout << endl<<p_c_pos_x << " " << p_c_pos_y;
+
+    int max_dist_p_to_b = 0;
+    //for (int i = 0; i < point_x_pos.size(); i++) {                                                              //находим точкую, дл€ которой рассто€ние до ближайшего преп€тстви€ максимально
+    //    if (dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos) > max_dist_p_to_b) {
+    //        max_dist_p_to_b = dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos);
+    //        p_b_pos_x = point_x_pos[i];
+    //        p_b_pos_y = point_y_pos[i];
+    //    }
+    //}
+
+    for (int i = 0; i < point_x_pos.size(); i++) {          //находим точку, рассто€ние от которой до ближайшего города минимально, а рассто€ние до преп€тстви€ максимально
+        if ((dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos) <= min_dist_p_to_c) &&
+            (dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos) >= max_dist_p_to_b))
+        {
+            min_dist_p_to_c = dist_to_city(point_x_pos[i], point_y_pos[i], city_x_pos, city_y_pos);
+            max_dist_p_to_b = dist_to_barier(point_x_pos[i], point_y_pos[i], barrier_x_pos, barrier_y_pos);
+            p_opt_x = point_x_pos[i];
+            p_opt_y = point_y_pos[i];
+        }
+
+    }
+    cout << min_dist_p_to_c;
+    cout <<endl<<max_dist_p_to_b;
+
+    cout <<endl<< " оординаты оптимальной точки: " << p_opt_x << " " << p_opt_y;
+
+    Lboard[p_opt_x][p_opt_y] = '*';
+    Sboard[p_opt_x][p_opt_y] = '*';
+
+    //cout << endl << p_b_pos_x << " " << p_b_pos_y;
 
    /* print_DRP();
     cout << endl << endl;*/
