@@ -43,11 +43,31 @@ public:
     }
 };
 
+vector<int> point_x_pos;
+vector<int> point_y_pos;
+
+vector<int> city_x_pos;
+vector<int> city_y_pos;
+
+vector<int> barrier_x_pos;
+vector<int> barrier_y_pos;
 
 void print_termenal_and_barrier();
 void print_DRP();
 void Print_newDRP(char Sboard[100][100]);
 void RenderScene();
+
+int dist_to_city(int p_x, int p_y, vector<int> c_x, vector<int> c_y) {                  //находим для точки расстояние до ближайшего к НЕЙ города
+
+    int dist_all = 100000;
+    int opt_x_pos, opt_y_pos;
+    for (int i = 0; i < c_x.size(); i++) {
+        if (abs(p_x - c_x[i]) + abs(p_y - c_y[i]) < dist_all) {
+            dist_all = abs(p_x - c_x[i]) + abs(p_y - c_y[i]);
+        }
+    }
+    return dist_all;
+}
 
 int main(int argc, char* argv[])
 {
@@ -55,11 +75,10 @@ int main(int argc, char* argv[])
 
     ifstream in("input.txt");    
     if (!in.is_open()) // если файл не открыт
-        cout << "Файл не может быть открыт!\n"; // сообщить об этом
+        cout << "Файл не может быть открыт!\n"; 
     else {
-        //ofstream out2("soukup.txt");
+
         in >> n;
-        in >> count_barrier;
         for (int i = 0; i < n; i++)
         {
             for (int j = 0; j < n; j++)
@@ -71,6 +90,7 @@ int main(int argc, char* argv[])
         memset(Lblock, false, (n * n) + 1);                                                                 //заполняем блоки памяти Lblock и Sblock 0
         memset(Sblock, false, (n * n) + 1);
 
+        in >> count_barrier;
         for (int i = 0; i < count_barrier; i++)
         {
             in >> bx >> by;
@@ -83,6 +103,8 @@ int main(int argc, char* argv[])
         in >> count_city;
         for (int i = 0; i < count_city; i++) {
             in >> cx >> cy;
+            city_x_pos.push_back(cx);
+            city_y_pos.push_back(cy);
             Lboard[cx][cy] = 'C';
             Sboard[cx][cy] = 'C';
         }
@@ -99,8 +121,10 @@ int main(int argc, char* argv[])
     print_termenal_and_barrier();
     cout << endl << endl;
 
-    print_DRP();
-    cout << endl << endl;
+   cout<< dist_to_city(6, 6, city_x_pos, city_y_pos);
+
+   /* print_DRP();
+    cout << endl << endl;*/
 
 
     Print_newDRP(Sboard);
