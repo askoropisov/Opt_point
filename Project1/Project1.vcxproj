@@ -142,18 +142,10 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Bogdan_v1\Bogdan_v1\control.h" />
     <ClInclude Include="..\..\..\Bogdan_v1\Bogdan_v1\glaux.h" />
     <ClInclude Include="..\..\..\Bogdan_v1\Bogdan_v1\glut.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="move.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\..\..\Bogdan_v1\Bogdan_v1\GLAUX.LIB" />
-    <Library Include="..\..\..\Bogdan_v1\Bogdan_v1\glut32.lib" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\Bogdan_v1\Bogdan_v1\glut32.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

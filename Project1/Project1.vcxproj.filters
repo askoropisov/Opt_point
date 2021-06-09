@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Файлы ресурсов">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -20,9 +16,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Bogdan_v1\Bogdan_v1\control.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Bogdan_v1\Bogdan_v1\glaux.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -35,12 +28,5 @@
     <ClInclude Include="move.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\..\..\Bogdan_v1\Bogdan_v1\GLAUX.LIB" />
-    <Library Include="..\..\..\Bogdan_v1\Bogdan_v1\glut32.lib" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\Bogdan_v1\Bogdan_v1\glut32.dll" />
   </ItemGroup>
 </Project>
