@@ -54,6 +54,9 @@ vector<int> city_y_pos;
 vector<int> barrier_x_pos;
 vector<int> barrier_y_pos;
 
+vector<int> water_x_pos;
+vector<int> water_y_pos;
+
 int p_opt_x, p_opt_y;                                                                   //координаты оптимальной точки
 
 void print_termenal_and_barrier();
@@ -131,7 +134,14 @@ int main(int argc, char* argv[])                                                
             }
         }
 
-        for (int i = 0; i < count_barrier; i++) {                                       //основываясь на количестве препятствий создаем столько препятствий
+        for (int i = 0; i < n; i++) {
+            Lboard[n-1][i] = 'w';                                                     
+            Sboard[n-1][i] = 'w';
+            water_x_pos.push_back(n);
+            water_y_pos.push_back(i);
+        }
+
+        while (barrier_x_pos.size()!=count_barrier) {                                       //основываясь на количестве препятствий создаем столько препятствий
             bx = rand() % n;                                                            //коор-ты по х и у задаеются случайные
             by = rand() % n;                                                            // % n означает , что диапазон случайных чисел лежит от 0 до n.
                                                                                         // в данном случае он нужен для того, чтоб координаты формировались только в пределе ДРП
